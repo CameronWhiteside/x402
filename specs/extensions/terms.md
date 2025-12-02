@@ -1,0 +1,82 @@
+# Extension: `terms`
+
+## Summary
+
+The `terms` extension establishes the **legal commitment** bound to the payment. This extension can be used by any network or scheme when both parties need to explicitly communicate the terms of the payment commitment.
+
+## Purpose
+
+Establishes the legal agreement and terms that bind the payment commitment. This ensures both the paying agent and the resource provider understand the usage rights, obligations, and settlement terms.
+
+## Extension Definition
+
+```json
+{
+  "terms": {
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "format": {
+          "type": "string",
+          "enum": ["uri", "markdown", "plaintext", "json"],
+          "description": "Format identifier describing how to interpret the terms field"
+        },
+        "terms": {
+          "type": "string",
+          "description": "Terms as a string (URL, markdown, plaintext, or JSON)"
+        }
+      },
+      "required": ["format", "terms"]
+    },
+    "info": {
+      "format": "uri",
+      "terms": "https://example.com/terms.md"
+    }
+  }
+}
+```
+
+## Fields
+
+- **`format`** (required): Format identifier describing how to interpret the `terms` field
+
+  - `"uri"`: Terms field contains a URL or data URI to the terms document
+  - `"markdown"`: Terms field contains Markdown formatted text
+  - `"plaintext"`: Terms field contains plain text
+  - `"json"`: Terms field contains JSON-stringified structured data
+
+- **`terms`** (required): Terms as a string
+  - If `format` is `"uri"`: An HTTPS URL or data URI pointing to the terms document
+  - If `format` is `"markdown"` or `"plaintext"`: The actual terms text
+  - If `format` is `"json"`: JSON string containing structured terms data
+
+## Examples
+
+```json
+// URI format
+{ "format": "uri", "terms": "https://example.com/terms.md" }
+
+// Markdown format
+{ "format": "markdown", "terms": "# Terms of Use\n\nThis content is provided under the following terms..." }
+
+// Plaintext format
+{ "format": "plaintext", "terms": "Licensed for non-commercial use only. Attribution required." }
+```
+
+## Usage
+
+This extension can be used across different payment schemes and networks to communicate:
+
+- **Content licensing**: Rights for LLM training, inference, or redistribution
+- **Subscription agreements**: Terms of service for ongoing access
+- **Usage restrictions**: Limitations on how the resource can be used
+- **Legal obligations**: Compliance requirements or liability terms
+
+When used with authentication extensions (like `http-message-signatures`), it creates a complete framework where the network knows both who is paying and what terms govern the usage of the accessed resource.
+
+## Example Use Cases
+
+- **Deferred scheme**: Communicating usage rights for content accessed through deferred payment
+- **Exact scheme**: Specifying terms for blockchain-settled payments
+- **Any scheme**: Establishing legal terms for resource access
