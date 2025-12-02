@@ -43,6 +43,7 @@ For a complete example implementation, see our [advanced server example](https:/
 If you're not using our `x402-fetch` or `x402-axios` packages, you can manually integrate the x402 protocol in your client application. Here's how:
 
 1. Make a request to a x402-protected endpoint. The server will respond with a 402 status code and a JSON object containing:
+
    - `x402Version`: The version of the x402 protocol being used
    - `accepts`: An array of payment requirements you can fulfill
 
@@ -51,10 +52,10 @@ If you're not using our `x402-fetch` or `x402-axios` packages, you can manually 
 3. Create the payment header using the selected payment requirement
 
 4. Retry your network call with:
-   - The payment header assigned to the `Payment-Agreement` field
+   - The payment header assigned to the `Payment-Signature` field
    - The `Access-Control-Expose-Headers` field set to `"Payment-Response"` to receive the server's transaction response
 
 For implementation examples, we recommend reviewing our official client packages:
+
 - [x402-fetch implementation](https://github.com/coinbase/x402/blob/main/typescript/packages/x402-fetch/src/index.ts)
 - [x402-axios implementation](https://github.com/coinbase/x402/blob/main/typescript/packages/x402-axios/src/index.ts)
-

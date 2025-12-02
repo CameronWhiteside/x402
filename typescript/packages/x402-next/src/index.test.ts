@@ -311,7 +311,7 @@ describe("paymentMiddleware()", () => {
     const json = await response.json();
     expect(json).toEqual({
       x402Version: 1,
-      error: "Payment-Agreement header is required",
+      error: "Payment-Signature header is required",
       accepts: [
         {
           scheme: "exact",
@@ -385,7 +385,7 @@ describe("paymentMiddleware()", () => {
     const request = {
       ...mockRequest,
       headers: new Headers({
-        "Payment-Agreement": validPayment,
+        "Payment-Signature": validPayment,
       }),
     } as NextRequest;
 
@@ -431,7 +431,7 @@ describe("paymentMiddleware()", () => {
     const request = {
       ...mockRequest,
       headers: new Headers({
-        "Payment-Agreement": invalidPayment,
+        "Payment-Signature": invalidPayment,
       }),
     } as NextRequest;
 
@@ -480,7 +480,7 @@ describe("paymentMiddleware()", () => {
     const request = {
       ...mockRequest,
       headers: new Headers({
-        "Payment-Agreement": validPayment,
+        "Payment-Signature": validPayment,
       }),
     } as NextRequest;
 
@@ -524,7 +524,7 @@ describe("paymentMiddleware()", () => {
     const request = {
       ...mockRequest,
       headers: new Headers({
-        "Payment-Agreement": validPayment,
+        "Payment-Signature": validPayment,
       }),
     } as NextRequest;
 
@@ -590,7 +590,7 @@ describe("paymentMiddleware()", () => {
     const json = await response.json();
     expect(json).toEqual({
       x402Version: 1,
-      error: "Payment-Agreement header is required",
+      error: "Payment-Signature header is required",
       accepts: [
         {
           scheme: "exact",
@@ -671,7 +671,7 @@ describe("paymentMiddleware()", () => {
     const request = {
       ...mockRequest,
       headers: new Headers({
-        "Payment-Agreement": validPayment,
+        "Payment-Signature": validPayment,
       }),
     } as NextRequest;
 

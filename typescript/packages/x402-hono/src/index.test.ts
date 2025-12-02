@@ -205,7 +205,7 @@ describe("paymentMiddleware()", () => {
 
     expect(mockContext.json).toHaveBeenCalledWith(
       {
-        error: "Payment-Agreement header is required",
+        error: "Payment-Signature header is required",
         accepts: [
           {
             scheme: "exact",
@@ -506,7 +506,7 @@ describe("paymentMiddleware()", () => {
 
     const invalidPayment = "invalid-payment-header";
     (mockContext.req.header as ReturnType<typeof vi.fn>).mockImplementation((name: string) => {
-      if (name === "Payment-Agreement") return invalidPayment;
+      if (name === "Payment-Signature") return invalidPayment;
       return undefined;
     });
 
@@ -555,7 +555,7 @@ describe("paymentMiddleware()", () => {
     const middlewareCustom = paymentMiddleware(payTo, customRoutesConfig, facilitatorConfig);
 
     (mockContext.req.header as ReturnType<typeof vi.fn>).mockImplementation((name: string) => {
-      if (name === "Payment-Agreement") return encodedValidPayment;
+      if (name === "Payment-Signature") return encodedValidPayment;
       return undefined;
     });
 
@@ -603,7 +603,7 @@ describe("paymentMiddleware()", () => {
     const middlewareCustom = paymentMiddleware(payTo, customRoutesConfig, facilitatorConfig);
 
     (mockContext.req.header as ReturnType<typeof vi.fn>).mockImplementation((name: string) => {
-      if (name === "Payment-Agreement") return encodedValidPayment;
+      if (name === "Payment-Signature") return encodedValidPayment;
       return undefined;
     });
 
@@ -678,7 +678,7 @@ describe("paymentMiddleware()", () => {
     const middlewareCustom = paymentMiddleware(payTo, customRoutesConfig, facilitatorConfig);
 
     (mockContext.req.header as ReturnType<typeof vi.fn>).mockImplementation((name: string) => {
-      if (name === "Payment-Agreement") return encodedValidPayment;
+      if (name === "Payment-Signature") return encodedValidPayment;
       return undefined;
     });
 
@@ -751,7 +751,7 @@ describe("paymentMiddleware()", () => {
     const middlewareCustom = paymentMiddleware(payTo, customRoutesConfig, facilitatorConfig);
 
     (mockContext.req.header as ReturnType<typeof vi.fn>).mockImplementation((name: string) => {
-      if (name === "Payment-Agreement") return encodedValidPayment;
+      if (name === "Payment-Signature") return encodedValidPayment;
       return undefined;
     });
 
@@ -815,7 +815,7 @@ describe("paymentMiddleware()", () => {
 
   it("should verify payment and proceed if valid", async () => {
     (mockContext.req.header as ReturnType<typeof vi.fn>).mockImplementation((name: string) => {
-      if (name === "Payment-Agreement") return encodedValidPayment;
+      if (name === "Payment-Signature") return encodedValidPayment;
       return undefined;
     });
 
@@ -856,7 +856,7 @@ describe("paymentMiddleware()", () => {
   it("should return 402 if payment verification fails", async () => {
     const invalidPayment = "invalid-payment-header";
     (mockContext.req.header as ReturnType<typeof vi.fn>).mockImplementation((name: string) => {
-      if (name === "Payment-Agreement") return invalidPayment;
+      if (name === "Payment-Signature") return invalidPayment;
       return undefined;
     });
 
@@ -900,7 +900,7 @@ describe("paymentMiddleware()", () => {
 
   it("should handle settlement after response", async () => {
     (mockContext.req.header as ReturnType<typeof vi.fn>).mockImplementation((name: string) => {
-      if (name === "Payment-Agreement") return encodedValidPayment;
+      if (name === "Payment-Signature") return encodedValidPayment;
       return undefined;
     });
 
@@ -959,7 +959,7 @@ describe("paymentMiddleware()", () => {
 
   it("should handle settlement failure before response is sent", async () => {
     (mockContext.req.header as ReturnType<typeof vi.fn>).mockImplementation((name: string) => {
-      if (name === "Payment-Agreement") return encodedValidPayment;
+      if (name === "Payment-Signature") return encodedValidPayment;
       return undefined;
     });
 
@@ -1022,7 +1022,7 @@ describe("paymentMiddleware()", () => {
 
   it("should not settle payment if protected route returns status >= 400", async () => {
     (mockContext.req.header as ReturnType<typeof vi.fn>).mockImplementation((name: string) => {
-      if (name === "Payment-Agreement") return encodedValidPayment;
+      if (name === "Payment-Signature") return encodedValidPayment;
       return undefined;
     });
     (mockVerify as ReturnType<typeof vi.fn>).mockResolvedValue({ isValid: true });

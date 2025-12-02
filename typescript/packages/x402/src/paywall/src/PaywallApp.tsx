@@ -159,7 +159,7 @@ export function PaywallApp() {
       setStatus("Requesting content with payment...");
       const response = await fetch(x402.currentUrl, {
         headers: {
-          "Payment-Agreement": paymentHeader,
+          "Payment-Signature": paymentHeader,
           "Access-Control-Expose-Headers": "Payment-Response",
         },
       });
@@ -181,7 +181,7 @@ export function PaywallApp() {
           const retryHeader = exact.evm.encodePayment(retryPayment);
           const retryResponse = await fetch(x402.currentUrl, {
             headers: {
-              "Payment-Agreement": retryHeader,
+              "Payment-Signature": retryHeader,
               "Access-Control-Expose-Headers": "Payment-Response",
             },
           });

@@ -135,7 +135,7 @@ export function paymentMiddleware(
     });
 
     // Check for payment header
-    const paymentHeader = request.headers.get("Payment-Agreement");
+    const paymentHeader = request.headers.get("Payment-Signature");
     if (!paymentHeader) {
       const paymentRequiredHeaders = buildPaywallHeaders({
         x402Version,
@@ -183,7 +183,7 @@ export function paymentMiddleware(
       return new NextResponse(
         JSON.stringify({
           x402Version,
-          error: errorMessages?.paymentRequired || "Payment-Agreement header is required",
+          error: errorMessages?.paymentRequired || "Payment-Signature header is required",
           accepts: paymentRequirements,
         }),
         {

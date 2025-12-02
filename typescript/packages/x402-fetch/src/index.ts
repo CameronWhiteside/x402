@@ -100,7 +100,7 @@ export function wrapFetchWithPayment(
       ...init,
       headers: {
         ...(init.headers || {}),
-        "Payment-Agreement": paymentHeader,
+        "Payment-Signature": paymentHeader,
         "Access-Control-Expose-Headers": "Payment-Response",
       },
       __is402Retry: true,

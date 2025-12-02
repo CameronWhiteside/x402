@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const CloudflareNetwork = "cloudflare" as const;
+export const CloudflareNetwork = "cloudflare:com" as const;
 
 export const DeferredNetworkSchema = z.enum([CloudflareNetwork]);
 

@@ -116,7 +116,7 @@ export function paymentMiddleware(
       asset,
     });
 
-    const payment = req.header("Payment-Agreement");
+    const payment = req.header("Payment-Signature");
     const userAgent = req.header("User-Agent") || "";
     const acceptHeader = req.header("Accept") || "";
     const isWebBrowser = acceptHeader.includes("text/html") && userAgent.includes("Mozilla");
@@ -162,7 +162,7 @@ export function paymentMiddleware(
         .header(paymentRequiredHeaders)
         .json({
           x402Version,
-          error: "Payment-Agreement header is required",
+          error: "Payment-Signature header is required",
           accepts: toJsonSafe(paymentRequirements),
         });
       return;
