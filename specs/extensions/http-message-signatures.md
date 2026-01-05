@@ -17,7 +17,7 @@ Establishes the cryptographic identity of the paying agent and provides informat
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "type": "object",
       "properties": {
-        "networkUrl": {
+        "registrationUrl": {
           "type": "string",
           "format": "uri",
           "description": "URL to the network's setup endpoint and documentation"
@@ -37,10 +37,10 @@ Establishes the cryptographic identity of the paying agent and provides informat
           "description": "Supported signature tags for validation"
         }
       },
-      "required": ["networkUrl"]
+      "required": ["registrationUrl"]
     },
     "info": {
-      "networkUrl": "https://network.example.com/signature-agents",
+      "registrationUrl": "https://network.example.com/signature-agents",
       "signatureSchemes": ["ed25519", "ecdsa-p256-sha256", "rsa-pss-sha512"],
       "tags": ["web-bot-auth", "agent-browser-auth"]
     }
@@ -50,7 +50,7 @@ Establishes the cryptographic identity of the paying agent and provides informat
 
 ## Fields
 
-- **`networkUrl`** (required): URL to the network's documentation and setup endpoint where signature agents can associate their identity with a billing identity
+- **`registrationUrl`** (required): URL to the network's documentation and setup endpoint where signature agents can associate their identity with a billing identity
 - **`signatureSchemes`** (required): Array of supported cryptographic algorithms (e.g., `["ed25519", "ecdsa-p256-sha256", "rsa-pss-sha512"]`)
 - **`tags`** (required): Array of supported signature tags that identify the purpose (e.g., `["web-bot-auth"]`)
 
@@ -58,14 +58,14 @@ Establishes the cryptographic identity of the paying agent and provides informat
 
 Networks that use HTTP Message Signatures for authentication include this extension in the `PaymentRequired` response to inform clients:
 
-1. Where to register their signature agent with the network (`networkUrl`)
+1. Where to register their signature agent with the network (`registrationUrl`)
 2. Which cryptographic algorithms are supported (`signatureSchemes`)
 3. Which signature tags are accepted for validation (`tags`)
 
 The client must:
 
 1. Host their public keys at a `.well-known` endpoint
-2. Register their signature agent URL with the network via the `networkUrl`
+2. Register their signature agent URL with the network via the `registrationUrl`
 3. Sign HTTP requests using HTTP Message Signatures (RFC 9421) with the appropriate tag
 
 ## Example Networks
@@ -82,14 +82,14 @@ The client must:
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
         "properties": {
-          "networkUrl": { "type": "string", "format": "uri" },
+          "registrationUrl": { "type": "string", "format": "uri" },
           "signatureSchemes": { "type": "array", "items": { "type": "string" } },
           "tags": { "type": "array", "items": { "type": "string" } }
         },
-        "required": ["networkUrl"]
+        "required": ["registrationUrl"]
       },
       "info": {
-        "networkUrl": "https://dash.cloudflare.com/?to=/:account/configurations/verified-bots",
+        "registrationUrl": "https://dash.cloudflare.com/?to=/:account/configurations/verified-bots",
         "signatureSchemes": ["ed25519"],
         "tags": ["web-bot-auth"]
       }
