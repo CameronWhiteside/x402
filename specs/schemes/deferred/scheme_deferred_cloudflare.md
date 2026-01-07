@@ -15,7 +15,7 @@ The protocol flow for `deferred` on the network (Cloudflare) includes an initial
 ### First-time Setup (Client)
 
 1. Host public keys at a `.well-known` endpoint (e.g., `https://mycrawler.com/.well-known/web-bot-auth`
-2. Submit signature agent URL to the `networkUrl` from the `http-message-signatures` extension (e.g., `https://dash.cloudflare.com/?to=/:account/configurations/verified-bots`)
+2. Submit signature agent URL to the `registrationUrl` from the `http-message-signatures` extension (e.g., `https://dash.cloudflare.com/?to=/:account/configurations/verified-bots`)
 3. The network (Cloudflare) associates signature agent URL with a billing identity for settlement
 
 ### Payment Flow (Per Request)
@@ -78,14 +78,14 @@ PAYMENT-REQUIRED: eyJ4NDAyVmVyc2lvbiI6IDIsICJlcnJvciI6ICJObyBQQVlNRU5ULVNJR05BVF
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
         "properties": {
-          "networkUrl": { "type": "string", "format": "uri" },
+          "registrationUrl": { "type": "string", "format": "uri" },
           "signatureSchemes": { "type": "array", "items": { "type": "string" } },
           "tags": { "type": "array", "items": { "type": "string" } }
         },
-        "required": ["networkUrl"]
+        "required": ["registrationUrl", "signatureSchemes"]
       },
       "info": {
-        "networkUrl": "https://dash.cloudflare.com/?to=/:account/configurations/verified-bots",
+        "registrationUrl": "https://dash.cloudflare.com/?to=/:account/configurations/verified-bots",
         "signatureSchemes": ["ed25519"],
         "tags": ["web-bot-auth"]
       }
@@ -123,7 +123,7 @@ PAYMENT-REQUIRED: eyJ4NDAyVmVyc2lvbiI6IDIsICJlcnJvciI6ICJObyBQQVlNRU5ULVNJR05BVF
 The Cloudflare implementation uses the `http-message-signatures` extension to communicate authentication requirements and may optionally include the `terms` extension (see [scheme_deferred.md](./scheme_deferred.md#common-extensions) for full definitions):
 
 - `extensions.http-message-signatures`: Communicates Cloudflare's authentication requirements
-  - `info.networkUrl`: URL to the network's setup endpoint (`https://dash.cloudflare.com/?to=/:account/configurations/verified-bots`)
+  - `info.registrationUrl`: URL to the network's setup endpoint (`https://dash.cloudflare.com/?to=/:account/configurations/verified-bots`)
   - `info.signatureSchemes`: Supported algorithms (`["ed25519"]`)
   - `info.tags`: Supported signature tags (`["web-bot-auth"]`)
 - `extensions.terms` (Optional): Communicates legal terms bound to the payment
@@ -283,7 +283,7 @@ The `terms` extension in the response serves as a reference of the usage terms t
 
 The network (Cloudflare) implements the `deferred` scheme with the following details:
 
-**Network URL**: `https://dash.cloudflare.com/?to=/:account/configurations/verified-bots`
+**Registration URL**: `https://dash.cloudflare.com/?to=/:account/configurations/verified-bots`
 
 This URL provides:
 
@@ -302,6 +302,17 @@ This URL provides:
 4. Client can now sign requests using HTTP Message Signatures, with the `Signature-Agent` header pointing to their `.well-known` URL
 5. Resource servers verify signatures by fetching public keys from the `Signature-Agent` URL and validating the signature agent is known to the network
 
+### Network Registration Terms
+
+The following operational details are established during registration with the network (via `registrationUrl`) and are not part of the x402 protocol itself:
+
+- **Settlement periods**: Frequency of billing cycles (e.g., daily, weekly)
+- **Payment failure handling**: What happens if deferred payments cannot be settled
+- **Rate limits and quotas**: Usage restrictions per billing period
+- **Dispute resolution**: Process for handling billing disputes
+
+These terms may vary by account and are subject to the network's terms of service.
+
 **Note**: For the full extension definitions (`http-message-signatures` and `terms`), see the [deferred scheme specification](./scheme_deferred.md#common-extensions).
 
 **Example HTTP Request with Message Signatures**:
@@ -317,7 +328,7 @@ Signature: sig=:abc123...==:
 Payment-Signature: eyJ4NDAyVmVyc2lvbiI6IDIsIC4uLn0=
 ```
 
-The `Signature-Agent` header indicates where to find the client's public keys (e.g., `mycrawler.com`). This URL must be known to the network (Cloudflare) and associated with a billing identity. The `networkUrl` in the extension points to the network's documentation on how to associate your signature agent.
+The `Signature-Agent` header indicates where to find the client's public keys (e.g., `mycrawler.com`). This URL must be known to the network (Cloudflare) and associated with a billing identity. The `registrationUrl` in the extension points to the network's documentation on how to associate your signature agent.
 
 ### Security Considerations
 

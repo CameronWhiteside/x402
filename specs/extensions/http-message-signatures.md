@@ -37,7 +37,7 @@ Establishes the cryptographic identity of the paying agent and provides informat
           "description": "Supported signature tags for validation"
         }
       },
-      "required": ["registrationUrl"]
+      "required": ["registrationUrl", "signatureSchemes"]
     },
     "info": {
       "registrationUrl": "https://network.example.com/signature-agents",
@@ -86,7 +86,7 @@ The client must:
           "signatureSchemes": { "type": "array", "items": { "type": "string" } },
           "tags": { "type": "array", "items": { "type": "string" } }
         },
-        "required": ["registrationUrl"]
+        "required": ["registrationUrl", "signatureSchemes"]
       },
       "info": {
         "registrationUrl": "https://dash.cloudflare.com/?to=/:account/configurations/verified-bots",

@@ -25,13 +25,18 @@ Establishes the legal agreement and terms that bind the payment commitment. This
         "terms": {
           "type": "string",
           "description": "Terms as a string (URL, markdown, plaintext, or JSON)"
+        },
+        "version": {
+          "type": "string",
+          "description": "Version identifier for change detection"
         }
       },
       "required": ["format", "terms"]
     },
     "info": {
       "format": "uri",
-      "terms": "https://example.com/terms.md"
+      "terms": "https://example.com/terms.md",
+      "version": "2026-01-15"
     }
   }
 }
@@ -47,15 +52,18 @@ Establishes the legal agreement and terms that bind the payment commitment. This
   - `"json"`: Terms field contains JSON-stringified structured data
 
 - **`terms`** (required): Terms as a string
+
   - If `format` is `"uri"`: An HTTPS URL or data URI pointing to the terms document
   - If `format` is `"markdown"` or `"plaintext"`: The actual terms text
   - If `format` is `"json"`: JSON string containing structured terms data
 
+- **`version`** (optional): Identifier for change detection. Allows clients to detect when terms have changed without fetching the full document. Can be a date, semantic version, hash, or any string that changes when terms are updated.
+
 ## Examples
 
 ```json
-// URI format
-{ "format": "uri", "terms": "https://example.com/terms.md" }
+// URI format with version for change detection
+{ "format": "uri", "terms": "https://example.com/terms.md", "version": "2026-01-15" }
 
 // Markdown format
 { "format": "markdown", "terms": "# Terms of Use\n\nThis content is provided under the following terms..." }
