@@ -70,7 +70,7 @@ The client must:
 
 ## Example Networks
 
-- **Cloudflare** (`cloudflare:com`): Uses this extension with `ed25519` signatures and `web-bot-auth` tag
+- **Cloudflare** (`cloudflare:pay-per-crawl`): Uses this extension with `ed25519` signatures and `web-bot-auth` tag
 
 ## Example
 
@@ -83,13 +83,16 @@ The client must:
         "type": "object",
         "properties": {
           "registrationUrl": { "type": "string", "format": "uri" },
-          "signatureSchemes": { "type": "array", "items": { "type": "string" } },
+          "signatureSchemes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
           "tags": { "type": "array", "items": { "type": "string" } }
         },
         "required": ["registrationUrl", "signatureSchemes"]
       },
       "info": {
-        "registrationUrl": "https://dash.cloudflare.com/?to=/:account/configurations/verified-bots",
+        "registrationUrl": "https://developers.cloudflare.com/ai-crawl-control/features/pay-per-crawl/use-pay-per-crawl-as-ai-owner/verify-ai-crawler/",
         "signatureSchemes": ["ed25519"],
         "tags": ["web-bot-auth"]
       }

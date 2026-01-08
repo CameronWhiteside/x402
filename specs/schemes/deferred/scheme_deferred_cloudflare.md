@@ -1,10 +1,10 @@
-# Scheme: `deferred` `cloudflare:com`
+# Scheme: `deferred` `cloudflare:pay-per-crawl`
 
 ## Summary
 
-The `deferred` scheme on the Cloudflare network `cloudflare:com` enables access to resources through cryptographically signed payment commitments that are settled later through the network's infrastructure.
+The `deferred` scheme on the Cloudflare network `cloudflare:pay-per-crawl` enables access to resources through cryptographically signed payment commitments that are settled later through the network's infrastructure.
 
-**Network Identifier**: `cloudflare:com` (production network)
+**Network Identifier**: `cloudflare:pay-per-crawl`
 
 **Authentication Method**: This implementation uses **HTTP Message Signatures (RFC 9421)** to authenticate payment commitments. The network acts as a trusted intermediary to provide resource access while deferring actual payment settlement.
 
@@ -15,13 +15,13 @@ The protocol flow for `deferred` on the network (Cloudflare) includes an initial
 ### First-time Setup (Client)
 
 1. Host public keys at a `.well-known` endpoint (e.g., `https://mycrawler.com/.well-known/web-bot-auth`
-2. Submit signature agent URL to the `registrationUrl` from the `http-message-signatures` extension (e.g., `https://dash.cloudflare.com/?to=/:account/configurations/verified-bots`)
+2. Submit signature agent URL to the `registrationUrl` from the `http-message-signatures` extension (e.g., `https://developers.cloudflare.com/ai-crawl-control/features/pay-per-crawl/use-pay-per-crawl-as-ai-owner/verify-ai-crawler/`)
 3. The network (Cloudflare) associates signature agent URL with a billing identity for settlement
 
 ### Payment Flow (Per Request)
 
 1. Makes an HTTP request to a **Resource Server**.
-2. **Resource Server** responds with a `402 Payment Required` status. The response includes a PAYMENT-REQUIRED header (base64-encoded JSON) containing payment requirements with the `deferred` scheme and `cloudflare:com` network with `payTo` set to `merchant`. The response also includes the `http-message-signatures` extension indicating where to find documentation on associating the HTTP message signature agent with the network.
+2. **Resource Server** responds with a `402 Payment Required` status. The response includes a PAYMENT-REQUIRED header (base64-encoded JSON) containing payment requirements with the `deferred` scheme and `cloudflare:pay-per-crawl` network with `payTo` set to `merchant`. The response also includes the `http-message-signatures` extension indicating where to find documentation on associating the HTTP message signature agent with the network.
 3. **Client** constructs a payment payload containing the payment commitment (amount, asset) and signs the HTTP request using **HTTP Message Signatures (RFC 9421)**. The client includes `Signature-Agent`, `Signature-Input`, and `Signature` headers along with the PAYMENT-SIGNATURE header.
 4. **Client** sends a new HTTP request with the PAYMENT-SIGNATURE header (base64-encoded JSON) and HTTP Message Signature headers.
 5. **Resource Server** verifies the signature agent is recognized by the network (Cloudflare) and fetches the public key.
@@ -36,7 +36,9 @@ The protocol flow for `deferred` on the network (Cloudflare) includes an initial
 
 ## PaymentRequired for deferred
 
-The `deferred` scheme on the Cloudflare network uses the standard x402 `PaymentRequired` fields. The Cloudflare implementation includes the `http-message-signatures` extension to communicate authentication requirements:
+The `deferred` scheme on the Cloudflare network uses the standard x402 `PaymentRequired` fields. The Cloudflare implementation includes the `http-message-signatures` extension to communicate authentication requirements.
+
+> **Note on Price Availability**: The `amount` field in `accepts` may not be available in all responses. Price information is only guaranteed when the HTTP Message Signature extension is correctly parsed and the signature agent is recognized. When price is not available, clients should retry with authentication.
 
 ```http
 HTTP/2 402 Payment Required
@@ -65,7 +67,7 @@ PAYMENT-REQUIRED: eyJ4NDAyVmVyc2lvbiI6IDIsICJlcnJvciI6ICJObyBQQVlNRU5ULVNJR05BVF
   "accepts": [
     {
       "scheme": "deferred",
-      "network": "cloudflare:com",
+      "network": "cloudflare:pay-per-crawl",
       "amount": "1",
       "asset": "USD",
       "payTo": "merchant",
@@ -79,13 +81,16 @@ PAYMENT-REQUIRED: eyJ4NDAyVmVyc2lvbiI6IDIsICJlcnJvciI6ICJObyBQQVlNRU5ULVNJR05BVF
         "type": "object",
         "properties": {
           "registrationUrl": { "type": "string", "format": "uri" },
-          "signatureSchemes": { "type": "array", "items": { "type": "string" } },
+          "signatureSchemes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
           "tags": { "type": "array", "items": { "type": "string" } }
         },
         "required": ["registrationUrl", "signatureSchemes"]
       },
       "info": {
-        "registrationUrl": "https://dash.cloudflare.com/?to=/:account/configurations/verified-bots",
+        "registrationUrl": "https://developers.cloudflare.com/ai-crawl-control/features/pay-per-crawl/use-pay-per-crawl-as-ai-owner/verify-ai-crawler/",
         "signatureSchemes": ["ed25519"],
         "tags": ["web-bot-auth"]
       }
@@ -95,7 +100,10 @@ PAYMENT-REQUIRED: eyJ4NDAyVmVyc2lvbiI6IDIsICJlcnJvciI6ICJObyBQQVlNRU5ULVNJR05BVF
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
         "properties": {
-          "format": { "type": "string", "enum": ["uri", "markdown", "plaintext", "json"] },
+          "format": {
+            "type": "string",
+            "enum": ["uri", "markdown", "plaintext", "json"]
+          },
           "terms": { "type": "string" }
         },
         "required": ["format", "terms"]
@@ -112,18 +120,20 @@ PAYMENT-REQUIRED: eyJ4NDAyVmVyc2lvbiI6IDIsICJlcnJvciI6ICJObyBQQVlNRU5ULVNJR05BVF
 **PaymentRequirements fields:**
 
 - `scheme`: Must be `"deferred"`
-- `network`: Must be `"cloudflare:com"` (CAIP-2 format)
+- `network`: Must be `"cloudflare:pay-per-crawl"` (CAIP-2 format)
 - `asset`: The asset identifier (e.g., `"USD"` for fiat currency - ISO 4217 format)
 - `payTo`: Must be `"merchant"` (constant indicating the network handles settlement)
 - `amount`: Payment amount in smallest unit of the asset (e.g., cents for USD)
-- `maxTimeoutSeconds`: Maximum time allowed for payment completion
+- `maxTimeoutSeconds`: Maximum time allowed for payment completion (optional, see note below)
+
+> **Note on Timeouts**: When the `maxTimeoutSeconds` is omitted or set to `0`, the network makes no timing guarantees on price validity. Clients should not cache pricing information across requests when timeout is zero or absent.
 
 **Extensions:**
 
 The Cloudflare implementation uses the `http-message-signatures` extension to communicate authentication requirements and may optionally include the `terms` extension (see [scheme_deferred.md](./scheme_deferred.md#common-extensions) for full definitions):
 
 - `extensions.http-message-signatures`: Communicates Cloudflare's authentication requirements
-  - `info.registrationUrl`: URL to the network's setup endpoint (`https://dash.cloudflare.com/?to=/:account/configurations/verified-bots`)
+  - `info.registrationUrl`: URL to the network's setup documentation (`https://developers.cloudflare.com/ai-crawl-control/features/pay-per-crawl/use-pay-per-crawl-as-ai-owner/verify-ai-crawler/`) - this is intended for human-driven setup; a programmatic API endpoint may be provided in future versions
   - `info.signatureSchemes`: Supported algorithms (`["ed25519"]`)
   - `info.tags`: Supported signature tags (`["web-bot-auth"]`)
 - `extensions.terms` (Optional): Communicates legal terms bound to the payment
@@ -156,7 +166,7 @@ PAYMENT-SIGNATURE: eyJ4NDAyVmVyc2lvbiI6MiwicGF5bG9hZCI6eyJhbW91bnQiOiI1IiwiYXNzZ
   },
   "accepted": {
     "scheme": "deferred",
-    "network": "cloudflare:com",
+    "network": "cloudflare:pay-per-crawl",
     "amount": "5",
     "asset": "USD",
     "payTo": "merchant",
@@ -262,7 +272,7 @@ PAYMENT-RESPONSE: eyJhbW91bnQiOiAiNSIsICJhc3NldCI6ICJVU0QiLCAibmV0d29yayI6ICJjbG
 {
   "amount": "5",
   "asset": "USD",
-  "network": "cloudflare:com",
+  "network": "cloudflare:pay-per-crawl",
   "timestamp": 1730872968,
   "extensions": {
     "terms": {
@@ -283,7 +293,9 @@ The `terms` extension in the response serves as a reference of the usage terms t
 
 The network (Cloudflare) implements the `deferred` scheme with the following details:
 
-**Registration URL**: `https://dash.cloudflare.com/?to=/:account/configurations/verified-bots`
+**Registration URL**: `https://developers.cloudflare.com/ai-crawl-control/features/pay-per-crawl/use-pay-per-crawl-as-ai-owner/verify-ai-crawler/`
+
+> **Note**: This URL is intended for human-driven setup and documentation. It provides instructions for the onboarding process including Web Bot Auth setup, verified bot policy compliance, and verification request submission. A programmatic API endpoint for automated registration may be provided in future versions.
 
 This URL provides:
 
@@ -361,12 +373,14 @@ The `Signature-Agent` header indicates where to find the client's public keys (e
 
 Error codes for deferred payment failures on the Cloudflare network:
 
+- `blocked`: Payment required to access resource
+- `price_not_acceptable`: Payment amount does not match requirements
+- `payment_failed`: Signature agent not associated with valid billing identity
 - `invalid_signature`: Invalid or missing `Signature-Input` or `Signature` headers
 - `signature_agent_unknown`: Signature agent not recognized by network (Cloudflare)
-- `invalid_payment_signature`: Invalid `Payment-Signature` header
-- `payment_failed`: Signature agent not associated with valid billing identity
-- `invalid_payment`: Payment amount does not match requirements
-- `server_error`: Server error
+- `invalid_payment_signature`: Invalid or malformed `PAYMENT-SIGNATURE` header
+- `origin_error`: Server error during payment processing
+- `unknown`: Unknown error
 
 ### Pre-Authorized Access
 
