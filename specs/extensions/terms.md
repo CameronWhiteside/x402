@@ -59,6 +59,8 @@ Establishes the legal agreement and terms that bind the payment commitment. This
 
 - **`version`** (optional): Identifier for change detection. Allows clients to detect when terms have changed without fetching the full document. Can be a date, semantic version, hash, or any string that changes when terms are updated.
 
+**Schema Omission**: The `schema` field is optional and may be omitted from responses to reduce header size. When omitted, clients should reference this specification for field definitions.
+
 ## Examples
 
 ```json

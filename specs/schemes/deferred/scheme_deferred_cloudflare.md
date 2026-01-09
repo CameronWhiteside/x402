@@ -14,7 +14,7 @@ The protocol flow for `deferred` on the network (Cloudflare) includes an initial
 
 ### First-time Setup (Client)
 
-1. Host public keys at a `.well-known` endpoint (e.g., `https://mycrawler.com/.well-known/web-bot-auth`
+1. Host public keys at a `.well-known` endpoint (e.g., `https://mycrawler.com/.well-known/http-message-signatures-directory`)
 2. Submit signature agent URL to the `registrationUrl` from the `http-message-signatures` extension (e.g., `https://developers.cloudflare.com/ai-crawl-control/features/pay-per-crawl/use-pay-per-crawl-as-ai-owner/verify-ai-crawler/`)
 3. The network (Cloudflare) associates signature agent URL with a billing identity for settlement
 
@@ -32,13 +32,27 @@ The protocol flow for `deferred` on the network (Cloudflare) includes an initial
 
 **Pre-Authorized Flow**: Clients with pre-authorized payment agreements can include the PAYMENT-SIGNATURE header and HTTP Message Signature headers in their initial request (step 1), bypassing the 402 response and proceeding directly to verification and access.
 
-**Note on HTTP Message Signatures**: All requests are signed using HTTP Message Signatures (RFC 9421). The signature agent's `.well-known` URL must be known to the network (Cloudflare) and associated with a billing identity for settlement.
+**Note on HTTP Message Signatures**: All requests are signed using HTTP Message Signatures (RFC 9421). The signature agent's `.well-known/http-message-signatures-directory` URL must be known to the network (Cloudflare) and associated with a billing identity for settlement. This conforms to [draft-meunier-http-message-signatures-directory-04](https://datatracker.ietf.org/doc/html/draft-meunier-http-message-signatures-directory-04).
 
 ## PaymentRequired for deferred
 
 The `deferred` scheme on the Cloudflare network uses the standard x402 `PaymentRequired` fields. The Cloudflare implementation includes the `http-message-signatures` extension to communicate authentication requirements.
 
 > **Note on Price Availability**: The `amount` field in `accepts` may not be available in all responses. Price information is only guaranteed when the HTTP Message Signature extension is correctly parsed and the signature agent is recognized. When price is not available, clients should retry with authentication.
+
+### Header Size Constraints
+
+HTTP intermediaries may reject headers larger than 2KB. To minimize header size, the `cloudflare:pay-per-crawl` network:
+
+- Omits `schema` from extensions (schemas are documented in the extension specifications)
+- May omit optional `resource` fields (`description`, `website`) when not available
+
+**Required fields:**
+
+- `x402Version`
+- `accepts[].scheme`, `accepts[].network`, `accepts[].amount`, `accepts[].asset`, `accepts[].payTo`
+- `accepts[].extra.version`: Network implementation version (semver format)
+- `extensions.http-message-signatures.info.registrationUrl`, `extensions.http-message-signatures.info.signatureSchemes`, `extensions.http-message-signatures.info.tags`
 
 ```http
 HTTP/2 402 Payment Required
@@ -60,9 +74,7 @@ PAYMENT-REQUIRED: eyJ4NDAyVmVyc2lvbiI6IDIsICJlcnJvciI6ICJObyBQQVlNRU5ULVNJR05BVF
   "error": "No PAYMENT-SIGNATURE header provided",
   "resource": {
     "url": "https://example.com/article",
-    "description": "Premium article content",
-    "mimeType": "text/html",
-    "website": "https://example.com"
+    "mimeType": "text/html"
   },
   "accepts": [
     {
@@ -71,24 +83,13 @@ PAYMENT-REQUIRED: eyJ4NDAyVmVyc2lvbiI6IDIsICJlcnJvciI6ICJObyBQQVlNRU5ULVNJR05BVF
       "amount": "1",
       "asset": "USD",
       "payTo": "merchant",
-      "maxTimeoutSeconds": 30
+      "extra": {
+        "version": "1.0.0"
+      }
     }
   ],
   "extensions": {
     "http-message-signatures": {
-      "schema": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "type": "object",
-        "properties": {
-          "registrationUrl": { "type": "string", "format": "uri" },
-          "signatureSchemes": {
-            "type": "array",
-            "items": { "type": "string" }
-          },
-          "tags": { "type": "array", "items": { "type": "string" } }
-        },
-        "required": ["registrationUrl", "signatureSchemes"]
-      },
       "info": {
         "registrationUrl": "https://developers.cloudflare.com/ai-crawl-control/features/pay-per-crawl/use-pay-per-crawl-as-ai-owner/verify-ai-crawler/",
         "signatureSchemes": ["ed25519"],
@@ -96,18 +97,6 @@ PAYMENT-REQUIRED: eyJ4NDAyVmVyc2lvbiI6IDIsICJlcnJvciI6ICJObyBQQVlNRU5ULVNJR05BVF
       }
     },
     "terms": {
-      "schema": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "type": "object",
-        "properties": {
-          "format": {
-            "type": "string",
-            "enum": ["uri", "markdown", "plaintext", "json"]
-          },
-          "terms": { "type": "string" }
-        },
-        "required": ["format", "terms"]
-      },
       "info": {
         "format": "uri",
         "terms": "https://example.com/ppc/terms.md"
@@ -125,6 +114,7 @@ PAYMENT-REQUIRED: eyJ4NDAyVmVyc2lvbiI6IDIsICJlcnJvciI6ICJObyBQQVlNRU5ULVNJR05BVF
 - `payTo`: Must be `"merchant"` (constant indicating the network handles settlement)
 - `amount`: Payment amount in smallest unit of the asset (e.g., cents for USD)
 - `maxTimeoutSeconds`: Maximum time allowed for payment completion (optional, see note below)
+- `extra.version`: Network implementation version in semver format (see [Network Version](#network-version))
 
 > **Note on Timeouts**: When the `maxTimeoutSeconds` is omitted or set to `0`, the network makes no timing guarantees on price validity. Clients should not cache pricing information across requests when timeout is zero or absent.
 
@@ -207,7 +197,7 @@ function verifyDeferredPayment(paymentPayload, signatureAgentHeader, httpSignatu
     return { valid: false, reason: "signature_agent_unknown" };
   }
 
-  // 2. Fetch public key from signature agent's .well-known endpoint
+  // 2. Fetch public key from signature agent's .well-known/http-message-signatures-directory endpoint
   const publicKey = await fetchPublicKey(signatureAgentHeader, agentInfo.keyId);
 
   if (!publicKey) {
@@ -299,7 +289,7 @@ The network (Cloudflare) implements the `deferred` scheme with the following det
 
 This URL provides:
 
-1. **Setup instructions**: How to submit your signature agent's `.well-known` URL to the network
+1. **Setup instructions**: How to submit your signature agent's `.well-known/http-message-signatures-directory` URL to the network
 2. **Billing identity association**: How to associate your signature agent with a billing identity for settlement
 3. **Public key requirements**: What public key formats and algorithms are supported
 4. **Verification process**: How the network verifies HTTP Message Signatures
@@ -308,10 +298,10 @@ This URL provides:
 
 **Setup Process**:
 
-1. Client hosts their public keys at a `.well-known` endpoint (e.g., `https://mycrawler.com/.well-known/web-bot-auth`)
+1. Client hosts their public keys at a `.well-known/http-message-signatures-directory` endpoint (e.g., `https://mycrawler.com/.well-known/http-message-signatures-directory`)
 2. Client submits this URL to the network via the network URL endpoint
 3. The network associates the signature agent URL with a billing identity
-4. Client can now sign requests using HTTP Message Signatures, with the `Signature-Agent` header pointing to their `.well-known` URL
+4. Client can now sign requests using HTTP Message Signatures, with the `Signature-Agent` header pointing to their `.well-known/http-message-signatures-directory` URL
 5. Resource servers verify signatures by fetching public keys from the `Signature-Agent` URL and validating the signature agent is known to the network
 
 ### Network Registration Terms
@@ -407,3 +397,13 @@ If the payment is valid, the server responds directly with `200 OK` and the requ
 | Currency         | Cryptocurrency (USDC, etc.)      | Fiat (USD, etc.)                        |
 | Infrastructure   | Blockchain wallet required       | Cloudflare account required             |
 | Trust Model      | Trustless blockchain             | Trusted Merchant of Record (Cloudflare) |
+
+### Network Version
+
+The `extra.version` field uses semantic versioning (semver) to signal changes in network behavior. Clients should check this field to detect breaking changes.
+
+**Changelog:**
+
+| Version | Date    | Changes         |
+| ------- | ------- | --------------- |
+| `1.0.0` | 2026-01 | Initial release |
