@@ -96,7 +96,7 @@ Servers publishing response signatures should host their public keys at `/.well-
 
 ## Example Networks
 
-- **Cloudflare** (`cloudflare:pay-per-crawl`): Uses this extension with `ed25519` signatures and `web-bot-auth` tag
+- **Cloudflare** (`cloudflare:402`): Uses this extension with `ed25519` signatures and `web-bot-auth` tag
 
 ## Example
 

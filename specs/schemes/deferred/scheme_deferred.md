@@ -46,7 +46,7 @@ See the [full extension specification](../../extensions/http-message-signatures.
 - Required fields (`registrationUrl`, `signatureSchemes`, `tags`)
 - Usage instructions and examples
 
-**Example networks**: Cloudflare (`cloudflare:pay-per-crawl`)
+**Example networks**: Cloudflare (`cloudflare:402`)
 
 #### Terms Extension
 

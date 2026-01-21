@@ -1,10 +1,10 @@
-# Scheme: `deferred` `cloudflare:pay-per-crawl`
+# Scheme: `deferred` `cloudflare:402`
 
 ## Summary
 
-The `deferred` scheme on the Cloudflare network `cloudflare:pay-per-crawl` enables access to resources through cryptographically signed payment commitments that are settled later through the network's infrastructure.
+The `deferred` scheme on the Cloudflare network `cloudflare:402` enables access to resources through cryptographically signed payment commitments that are settled later through the network's infrastructure.
 
-**Network Identifier**: `cloudflare:pay-per-crawl`
+**Network Identifier**: `cloudflare:402`
 
 **Authentication Method**: This implementation uses **HTTP Message Signatures (RFC 9421)** to authenticate payment commitments. The network acts as a trusted intermediary to provide resource access while deferring actual payment settlement.
 
@@ -21,7 +21,7 @@ The protocol flow for `deferred` on the network (Cloudflare) includes an initial
 ### Payment Flow (Per Request)
 
 1. Makes an HTTP request to a **Resource Server**.
-2. **Resource Server** responds with a `402 Payment Required` status. The response includes a PAYMENT-REQUIRED header (base64-encoded JSON) containing payment requirements with the `deferred` scheme and `cloudflare:pay-per-crawl` network with `payTo` set to `merchant`. The response also includes the `http-message-signatures` extension indicating where to find documentation on associating the HTTP message signature agent with the network.
+2. **Resource Server** responds with a `402 Payment Required` status. The response includes a PAYMENT-REQUIRED header (base64-encoded JSON) containing payment requirements with the `deferred` scheme and `cloudflare:402` network with `payTo` set to `merchant`. The response also includes the `http-message-signatures` extension indicating where to find documentation on associating the HTTP message signature agent with the network.
 3. **Client** constructs a payment payload containing the payment commitment (amount, asset) and signs the HTTP request using **HTTP Message Signatures (RFC 9421)**. The client includes `Signature-Agent`, `Signature-Input`, and `Signature` headers along with the PAYMENT-SIGNATURE header.
 4. **Client** sends a new HTTP request with the PAYMENT-SIGNATURE header (base64-encoded JSON) and HTTP Message Signature headers.
 5. **Resource Server** verifies the signature agent is recognized by the network (Cloudflare) and fetches the public key.
@@ -42,7 +42,7 @@ The `deferred` scheme on the Cloudflare network uses the standard x402 `PaymentR
 
 ### Header Size Constraints
 
-HTTP intermediaries may reject headers larger than 2KB. To minimize header size, the `cloudflare:pay-per-crawl` network:
+HTTP intermediaries may reject headers larger than 2KB. To minimize header size, the `cloudflare:402` network:
 
 - Omits `schema` from extensions (schemas are documented in the extension specifications)
 - May omit optional `resource` fields (`description`, `website`) when not available
@@ -79,7 +79,7 @@ PAYMENT-REQUIRED: eyJ4NDAyVmVyc2lvbiI6IDIsICJlcnJvciI6ICJObyBQQVlNRU5ULVNJR05BVF
   "accepts": [
     {
       "scheme": "deferred",
-      "network": "cloudflare:pay-per-crawl",
+      "network": "cloudflare:402",
       "amount": "1",
       "asset": "USD",
       "payTo": "merchant",
@@ -109,7 +109,7 @@ PAYMENT-REQUIRED: eyJ4NDAyVmVyc2lvbiI6IDIsICJlcnJvciI6ICJObyBQQVlNRU5ULVNJR05BVF
 **PaymentRequirements fields:**
 
 - `scheme`: Must be `"deferred"`
-- `network`: Must be `"cloudflare:pay-per-crawl"` (CAIP-2 format)
+- `network`: Must be `"cloudflare:402"` (CAIP-2 format)
 - `asset`: The asset identifier (e.g., `"USD"` for fiat currency - ISO 4217 format)
 - `payTo`: Must be `"merchant"` (constant indicating the network handles settlement)
 - `amount`: Payment amount in smallest unit of the asset (e.g., cents for USD)
@@ -156,7 +156,7 @@ PAYMENT-SIGNATURE: eyJ4NDAyVmVyc2lvbiI6MiwicGF5bG9hZCI6eyJhbW91bnQiOiI1IiwiYXNzZ
   },
   "accepted": {
     "scheme": "deferred",
-    "network": "cloudflare:pay-per-crawl",
+    "network": "cloudflare:402",
     "amount": "5",
     "asset": "USD",
     "payTo": "merchant",
@@ -262,7 +262,7 @@ PAYMENT-RESPONSE: eyJhbW91bnQiOiAiNSIsICJhc3NldCI6ICJVU0QiLCAibmV0d29yayI6ICJjbG
 {
   "amount": "5",
   "asset": "USD",
-  "network": "cloudflare:pay-per-crawl",
+  "network": "cloudflare:402",
   "timestamp": 1730872968,
   "extensions": {
     "terms": {
