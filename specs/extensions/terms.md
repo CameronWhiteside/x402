@@ -2,11 +2,11 @@
 
 ## Summary
 
-The `terms` extension establishes the **legal commitment** bound to the payment. This extension can be used by any network or scheme when both parties need to explicitly communicate the terms of the payment commitment.
+The `terms` extension can be used by any network or scheme to communicate the terms of the payment commitment.
 
 ## Purpose
 
-Establishes the legal agreement and terms that bind the payment commitment. This ensures both the paying agent and the resource provider understand the usage rights, obligations, and settlement terms.
+Describes the usage rights, obligations, and settlement terms of a payment commitment.
 
 ## Extension Definition
 
@@ -45,14 +45,12 @@ Establishes the legal agreement and terms that bind the payment commitment. This
 ## Fields
 
 - **`format`** (required): Format identifier describing how to interpret the `terms` field
-
   - `"uri"`: Terms field contains a URL or data URI to the terms document
   - `"markdown"`: Terms field contains Markdown formatted text
   - `"plaintext"`: Terms field contains plain text
   - `"json"`: Terms field contains JSON-stringified structured data
 
 - **`terms`** (required): Terms as a string
-
   - If `format` is `"uri"`: An HTTPS URL or data URI pointing to the terms document
   - If `format` is `"markdown"` or `"plaintext"`: The actual terms text
   - If `format` is `"json"`: JSON string containing structured terms data
@@ -89,4 +87,4 @@ When used with authentication extensions (like `http-message-signatures`), it cr
 
 - **Deferred scheme**: Communicating usage rights for content accessed through deferred payment
 - **Exact scheme**: Specifying terms for blockchain-settled payments
-- **Any scheme**: Establishing legal terms for resource access
+- **Any scheme**: Describing legal terms for resource access
